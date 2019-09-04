@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "966253052372",
+    "firebase_url": "https://be-marvellous.firebaseio.com",
+    "project_id": "be-marvellous",
+    "storage_bucket": "be-marvellous.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:966253052372:android:182212f447d22047",
+        "android_client_info": {
+          "package_name": "com.wampinfotech.be_marvellous"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "966253052372-opbsco5maekg79rtt7vpnfmv17gmminh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBEwdp2Ku8U2D367tMoewX24Ou_CuK1-sM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "966253052372-opbsco5maekg79rtt7vpnfmv17gmminh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
