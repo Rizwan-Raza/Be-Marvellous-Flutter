@@ -23,10 +23,11 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.2
-  http: ^0.12.0+2
+  rxdart: ^0.22.1+1
   firebase_core: ^0.4.0+9
   firebase_database: ^3.0.7
-
+  shared_preferences: ^0.5.3+4
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -70,6 +71,13 @@ flutter:
   #       - asset: fonts/TrajanPro.ttf
   #       - asset: fonts/TrajanPro_Bold.ttf
   #         weight: 700
+  fonts:
+    - family: Marvel
+      fonts:
+        - asset: fonts/marvel/Marvel-Regular.ttf
+    - family: Product-Sans
+      fonts:
+        - asset: fonts/product-sans/ProductSans-Regular.ttf
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
