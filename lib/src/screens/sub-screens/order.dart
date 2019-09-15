@@ -1,7 +1,9 @@
 import 'dart:convert';
 
-import 'package:be_marvellous/src/models/watch_item.dart';
-import 'package:be_marvellous/src/models/watch_items.dart';
+import 'package:be_marvellous/src/blocs/bloc_provider.dart';
+
+import '../../models/watch_item.dart';
+import '../../models/watch_items.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
@@ -26,16 +28,17 @@ class _OrderScreenState extends State<OrderScreen> {
     super.initState();
     prefs = await SharedPreferences.getInstance();
     watched = json.decode(prefs.getString('watchList') ?? '[]');
-    print('Pressed $watched times.');
+    // print('Pressed $watched times.');
   }
 
   @override
   Widget build(BuildContext context) {
+    DatabaseReference ref = BlocProvider.of(context).getWatchList();
     return Column(
       children: <Widget>[
         Flexible(
           child: FirebaseAnimatedList(
-            query: FirebaseDatabase.instance.reference().child("order"),
+            query: ref,
             padding: EdgeInsets.all(8.0),
             reverse: false,
             itemBuilder:
@@ -43,6 +46,7 @@ class _OrderScreenState extends State<OrderScreen> {
               return getWatchItemTile(
                   WatchItem.fromMap(snapshot.value, int.parse(snapshot.key)));
             },
+            defaultChild: Center(child: CircularProgressIndicator()),
           ),
         ),
       ],

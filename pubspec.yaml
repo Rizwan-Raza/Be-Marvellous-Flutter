@@ -27,6 +27,8 @@ dependencies:
   firebase_core: ^0.4.0+9
   firebase_database: ^3.0.7
   shared_preferences: ^0.5.3+4
+  http: ^0.12.0+2
+  html: ^0.14.0+2
   
 dev_dependencies:
   flutter_test:

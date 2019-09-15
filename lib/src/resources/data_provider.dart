@@ -1,13 +1,14 @@
-import '../models/watch_item.dart';
 import 'package:firebase_database/firebase_database.dart';
 
 class DataProvider {
-  final FirebaseDatabase database = FirebaseDatabase.instance;
+  DatabaseReference list = FirebaseDatabase.instance.reference().child("order");
+  DatabaseReference order = FirebaseDatabase.instance.reference().child("list");
 
-  Future<List<WatchItem>> getWatchList() async {
-    DataSnapshot dataSnapshot =
-        await database.reference().child("order").once();
-    print(dataSnapshot.toString());
-    return null;
+  DatabaseReference getWatchList() {
+    return this.list;
+  }
+
+  DatabaseReference getWatchOrder() {
+    return this.order;
   }
 }
