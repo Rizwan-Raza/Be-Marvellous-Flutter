@@ -1,16 +1,17 @@
 import 'package:be_marvellous/src/blocs/bloc.dart';
 import 'package:be_marvellous/src/blocs/bloc_provider.dart';
 import 'package:be_marvellous/src/models/character.dart';
+import 'package:be_marvellous/src/models/movies.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
-class CharactersScreen extends StatelessWidget {
-  const CharactersScreen({Key key}) : super(key: key);
+class MoviesScreen extends StatelessWidget {
+  const MoviesScreen({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     Bloc bloc = BlocProvider.of(context);
-    DatabaseReference ref = bloc.getCharacters();
+    DatabaseReference ref = bloc.getMovies();
     return StreamBuilder(
         stream: ref.onValue,
         builder: (context, snapshot) {
@@ -19,7 +20,7 @@ class CharactersScreen extends StatelessWidget {
             print(map);
             return RefreshIndicator(
               onRefresh: () async {
-                return await bloc.putCharacters();
+                return await bloc.putMovies();
               },
               child: GridView.builder(
                 itemCount: map.length,
@@ -27,7 +28,7 @@ class CharactersScreen extends StatelessWidget {
                 reverse: false,
                 itemBuilder: (_, int index) {
                   print(index);
-                  return getCharacterTile(Character.fromMap(map[index]));
+                  return getMovieTile(Movie.fromMap(map[index]));
                 },
                 gridDelegate: new SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3),
@@ -41,12 +42,12 @@ class CharactersScreen extends StatelessWidget {
         });
   }
 
-  GridTile getCharacterTile(Character char) {
+  GridTile getMovieTile(Movie movie) {
     return GridTile(
       child: Container(
         child: Column(
           children: <Widget>[
-            Text(char.title),
+            Text(movie.title),
           ],
         ),
       ),

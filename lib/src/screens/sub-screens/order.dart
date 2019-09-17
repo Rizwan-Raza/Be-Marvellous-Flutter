@@ -1,9 +1,9 @@
 import 'dart:convert';
 
+import 'package:be_marvellous/src/blocs/bloc.dart';
 import 'package:be_marvellous/src/blocs/bloc_provider.dart';
 
 import '../../models/watch_item.dart';
-import '../../models/watch_items.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
@@ -33,20 +33,25 @@ class _OrderScreenState extends State<OrderScreen> {
 
   @override
   Widget build(BuildContext context) {
-    DatabaseReference ref = BlocProvider.of(context).getWatchList();
+    Bloc bloc = BlocProvider.of(context);
+    DatabaseReference ref = bloc.getWatchOrder();
     return Column(
       children: <Widget>[
         Flexible(
-          child: FirebaseAnimatedList(
-            query: ref,
-            padding: EdgeInsets.all(8.0),
-            reverse: false,
-            itemBuilder:
-                (_, DataSnapshot snapshot, Animation<double> animation, int x) {
-              return getWatchItemTile(
-                  WatchItem.fromMap(snapshot.value, int.parse(snapshot.key)));
+          child: RefreshIndicator(
+            onRefresh: () async {
+              return await bloc.putWatchOrder();
             },
-            defaultChild: Center(child: CircularProgressIndicator()),
+            child: FirebaseAnimatedList(
+              query: ref,
+              padding: EdgeInsets.all(8.0),
+              reverse: false,
+              itemBuilder: (_, DataSnapshot snapshot,
+                  Animation<double> animation, int x) {
+                return getWatchItemTile(WatchItem.fromMap(snapshot.value));
+              },
+              defaultChild: Center(child: CircularProgressIndicator()),
+            ),
           ),
         ),
       ],
@@ -57,10 +62,15 @@ class _OrderScreenState extends State<OrderScreen> {
     return Column(
       children: <Widget>[
         CheckboxListTile(
-          title: Text(item.title),
-          subtitle: Text(WatchItems.getTitle(item.type)),
-          dense: true,
-          secondary: Icon(Icons.stars),
+          isThreeLine: true,
+          title: Text("${item.id + 1}: " + item.title),
+          subtitle: Text((item.type == "tv" ? item.subtitle : item.getType()) +
+              "\n" +
+              (item.type == "movie"
+                  ? item.desc.elementAt(1)
+                  : item.desc.length > 0 ? item.desc.first ?? "" : "")),
+          // secondary: Icon(Icons.stars),
+          secondary: Image.network(item.banner),
           onChanged: (bool value) async {
             setState(() {
               if (value) {
