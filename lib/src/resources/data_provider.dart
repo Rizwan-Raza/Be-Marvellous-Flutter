@@ -5,7 +5,10 @@ class DataProvider {
   DatabaseReference _list;
   DatabaseReference _order;
   DatabaseReference _chars;
+  DatabaseReference _heroes;
+  DatabaseReference _villain;
   DatabaseReference _movie;
+  DatabaseReference _tv;
   DataProvider() {
     _database = FirebaseDatabase.instance;
     _database.setPersistenceEnabled(true);
@@ -13,7 +16,10 @@ class DataProvider {
     _list = _database.reference().child("order");
     _order = _database.reference().child("list");
     _chars = _database.reference().child("characters");
+    _heroes = _database.reference().child("heroes");
+    _villain = _database.reference().child("villains");
     _movie = _database.reference().child("movies");
+    _tv = _database.reference().child("tv");
   }
 
   FirebaseDatabase getDatabase() {
@@ -32,7 +38,19 @@ class DataProvider {
     return this._chars;
   }
 
+  DatabaseReference getHeroes() {
+    return this._heroes;
+  }
+
+  DatabaseReference getVillain() {
+    return this._villain;
+  }
+
   DatabaseReference getMovies() {
     return this._movie;
+  }
+
+  DatabaseReference getTvs() {
+    return this._tv;
   }
 }

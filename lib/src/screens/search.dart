@@ -1,3 +1,4 @@
+import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
 import 'package:flutter/material.dart';
 
 class SearchList extends StatefulWidget {
@@ -7,6 +8,12 @@ class SearchList extends StatefulWidget {
 }
 
 class _SearchListState extends State<SearchList> {
+  int currentPage = 0;
+  List<Widget> pages = <Widget>[
+    Center(
+      child: CircularProgressIndicator(),
+    )
+  ];
   Widget appBarTitle = new Text(
     "Search Sample",
     style: new TextStyle(color: Colors.white),
@@ -42,6 +49,14 @@ class _SearchListState extends State<SearchList> {
     super.initState();
     _IsSearching = false;
     init();
+    pages.clear();
+    pages.add(new ListView(
+      padding: new EdgeInsets.symmetric(vertical: 8.0),
+      children: _IsSearching ? _buildSearchList() : _buildList(),
+    ));
+    pages.add(Center(child: Icon(Icons.videogame_asset)));
+    pages.add(Center(child: Icon(Icons.face)));
+    pages.add(Center(child: Icon(Icons.local_movies)));
   }
 
   void init() {
@@ -64,10 +79,20 @@ class _SearchListState extends State<SearchList> {
     return new Scaffold(
       key: key,
       appBar: buildBar(context),
-      body: new ListView(
-        padding: new EdgeInsets.symmetric(vertical: 8.0),
-        children: _IsSearching ? _buildSearchList() : _buildList(),
+      bottomNavigationBar: FancyBottomNavigation(
+        tabs: [
+          TabData(iconData: Icons.toc, title: "Watch List"),
+          TabData(iconData: Icons.videogame_asset, title: "Games"),
+          TabData(iconData: Icons.face, title: "Characters"),
+          TabData(iconData: Icons.local_movies, title: "Media"),
+        ],
+        onTabChangedListener: (position) {
+          setState(() {
+            currentPage = position;
+          });
+        },
       ),
+      body: pages[currentPage],
     );
   }
 

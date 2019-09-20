@@ -8,12 +8,18 @@ class Movie {
   Movie({this.title, this.subtitle, this.date, this.desc, this.image});
 
   Movie.fromMap(Map<dynamic, dynamic> map)
-      : title = map['title'],
-        subtitle = map['subtitle'],
-        date = DateTime(
-            map['date']['year'], map['date']['month'], map['date']['day']),
-        desc = map['desc'],
-        image = map['image'];
+      : title = map['headline'] ?? map['title'],
+        subtitle = map['secondary_text'] ?? map['subtitle'],
+        date = ((map['date'] is Map)
+            ? DateTime(
+                int.parse(map['date']['year'] ?? "1970"),
+                int.parse(map['date']['month'] ?? "1"),
+                int.parse(map['date']['day'] ?? "1"),
+              )
+            : map['date']),
+        desc = map['description'] ?? map['desc'],
+        image =
+            ((map['image'] is Map) ? map['image']['filename'] : map['image']);
 
   Map<String, dynamic> toJson() {
     return {

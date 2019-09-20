@@ -1,4 +1,7 @@
 import 'dart:convert';
+import 'package:be_marvellous/src/models/character.dart';
+import 'package:be_marvellous/src/models/movies.dart';
+
 import '../models/watch_item.dart';
 import 'package:firebase_database/firebase_database.dart';
 import '../resources/data_provider.dart';
@@ -11,7 +14,10 @@ class Bloc {
   final DatabaseReference watchList = provider.getWatchList();
   final DatabaseReference watchOrder = provider.getWatchOrder();
   final DatabaseReference characters = provider.getCharacters();
+  final DatabaseReference heroes = provider.getHeroes();
+  final DatabaseReference villain = provider.getVillain();
   final DatabaseReference movies = provider.getMovies();
+  final DatabaseReference tvs = provider.getTvs();
 
   DatabaseReference getWatchList() {
     return watchList;
@@ -24,8 +30,21 @@ class Bloc {
   DatabaseReference getCharacters() {
     return characters;
   }
+
+  DatabaseReference getHeroes() {
+    return heroes;
+  }
+
+  DatabaseReference getVillain() {
+    return villain;
+  }
+
   DatabaseReference getMovies() {
     return movies;
+  }
+
+  DatabaseReference getTvs() {
+    return tvs;
   }
 
   Future<int> putWatchOrder() async {
@@ -88,7 +107,11 @@ class Bloc {
         synopsis: synopsis.trim(),
         desc: desc,
       );
-      watchOrder.child("${id++}").set(wItem.toJson());
+      try {
+        watchOrder.child("${id++}").set(wItem.toJson());
+      } catch (error) {
+        print(error);
+      }
     }
     print(id);
     provider.getDatabase().purgeOutstandingWrites();
@@ -113,16 +136,75 @@ class Bloc {
 
   Future<int> putCharacters() async {
     List<String> source = <String>[
-      'https://www.marvel.com/v1/pagination/grid_cards?limit=5000&entityType=character&sortDirection=desc',
+      'https://www.marvel.com/v1/pagination/grid_cards?limit=5000&entityType=character&sortField=title&sortDirection=asc',
     ];
 
     int id = 0;
     for (String url in source) {
       Response response = await Client().get(url);
-      List<Map<dynamic, dynamic>> list =
+      List<dynamic> list =
           json.decode(response.body)['data']['results']['data'];
-      for (Map<dynamic, dynamic> item in list) {
-        characters.child("${id++}").set(item);
+      for (dynamic item in list) {
+        try {
+          characters
+              .child("${id++}")
+              .set(Character.fromMap(item).toJson())
+              .catchError(print);
+        } catch (error) {
+          print(error);
+        }
+      }
+    }
+    print(id);
+    provider.getDatabase().purgeOutstandingWrites();
+    return id;
+  }
+
+  Future<int> putHeroes() async {
+    List<String> source = <String>[
+      'https://www.marvel.com/v1/pagination/grid_cards?limit=5000&entityType=character&char_type=Hero&sortField=title&sortDirection=asc',
+    ];
+
+    int id = 0;
+    for (String url in source) {
+      Response response = await Client().get(url);
+      List<dynamic> list =
+          json.decode(response.body)['data']['results']['data'];
+      for (dynamic item in list) {
+        try {
+          heroes
+              .child("${id++}")
+              .set(Character.fromMap(item).toJson())
+              .catchError(print);
+        } catch (error) {
+          print(error);
+        }
+      }
+    }
+    print(id);
+    provider.getDatabase().purgeOutstandingWrites();
+    return id;
+  }
+
+  Future<int> putVillain() async {
+    List<String> source = <String>[
+      'https://www.marvel.com/v1/pagination/grid_cards?limit=5000&entityType=character&char_type=Villain&sortField=title&sortDirection=asc',
+    ];
+
+    int id = 0;
+    for (String url in source) {
+      Response response = await Client().get(url);
+      List<dynamic> list =
+          json.decode(response.body)['data']['results']['data'];
+      for (dynamic item in list) {
+        try {
+          villain
+              .child("${id++}")
+              .set(Character.fromMap(item).toJson())
+              .catchError(print);
+        } catch (error) {
+          print(error);
+        }
       }
     }
     print(id);
@@ -132,16 +214,49 @@ class Bloc {
 
   Future<int> putMovies() async {
     List<String> source = <String>[
-      'https://www.marvel.com/v1/pagination/grid_cards?limit=5000&entityType=movie&sortDirection=desc',
+      'https://www.marvel.com/v1/pagination/grid_cards?limit=5000&entityType=movie&sortField=release_date&sortDirection=asc',
     ];
 
     int id = 0;
     for (String url in source) {
       Response response = await Client().get(url);
-      List<Map<dynamic, dynamic>> list =
+      List<dynamic> list =
           json.decode(response.body)['data']['results']['data'];
-      for (Map<dynamic, dynamic> item in list) {
-        movies.child("${id++}").set(item);
+      for (dynamic item in list) {
+        try {
+          movies
+              .child("${id++}")
+              .set(Movie.fromMap(item).toJson())
+              .catchError(print);
+        } catch (error) {
+          print(error);
+        }
+      }
+    }
+    print(id);
+    provider.getDatabase().purgeOutstandingWrites();
+    return id;
+  }
+
+  Future<int> putTvs() async {
+    List<String> source = <String>[
+      'https://www.marvel.com/v1/pagination/grid_cards?limit=5000&entityType=tv&sortField=release_date&sortDirection=asc',
+    ];
+
+    int id = 0;
+    for (String url in source) {
+      Response response = await Client().get(url);
+      List<dynamic> list =
+          json.decode(response.body)['data']['results']['data'];
+      for (dynamic item in list) {
+        try {
+          tvs
+              .child("${id++}")
+              .set(Movie.fromMap(item).toJson())
+              .catchError(print);
+        } catch (error) {
+          print(error);
+        }
       }
     }
     print(id);
