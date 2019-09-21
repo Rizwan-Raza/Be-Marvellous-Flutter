@@ -17,12 +17,13 @@ class OrderScreen extends StatefulWidget {
   _OrderScreenState createState() => _OrderScreenState();
 }
 
-class _OrderScreenState extends State<OrderScreen> {
+class _OrderScreenState extends State<OrderScreen>
+    with AutomaticKeepAliveClientMixin {
   Bloc bloc;
   DatabaseReference ref;
   SharedPreferences prefs;
   List<dynamic> watched = [];
-  int type = 0;
+  int type;
 
   _OrderScreenState() {
     init();
@@ -40,6 +41,9 @@ class _OrderScreenState extends State<OrderScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+    type = widget.type;
+    print("Method Run $type");
     return Column(
       children: <Widget>[
         Flexible(
@@ -48,6 +52,7 @@ class _OrderScreenState extends State<OrderScreen> {
               return await bloc.putWatchOrder();
             },
             child: FirebaseAnimatedList(
+              padding: EdgeInsets.zero,
               query: ref ??
                   ((bloc == null)
                       ? widget.bloc.getWatchOrder()
@@ -85,7 +90,10 @@ class _OrderScreenState extends State<OrderScreen> {
                   default:
                     break;
                 }
-                if (skipThis) return Container();
+                if (skipThis)
+                  return Container(
+                    color: Colors.red,
+                  );
                 return getWatchItemTile(currentItem);
               },
               defaultChild: Center(child: CircularProgressIndicator()),
@@ -99,6 +107,9 @@ class _OrderScreenState extends State<OrderScreen> {
   Widget getWatchItemTile(WatchItem item) {
     return Column(
       children: <Widget>[
+        Divider(
+          height: 0,
+        ),
         CheckboxListTile(
           isThreeLine: true,
           title: Text(
@@ -130,10 +141,10 @@ class _OrderScreenState extends State<OrderScreen> {
           },
           value: watched.contains(item.id),
         ),
-        Divider(
-          height: 0,
-        ),
       ],
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

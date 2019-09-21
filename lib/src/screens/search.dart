@@ -25,19 +25,19 @@ class _SearchListState extends State<SearchList> {
   final key = new GlobalKey<ScaffoldState>();
   final TextEditingController _searchQuery = new TextEditingController();
   List<String> _list;
-  bool _IsSearching;
+  bool _isSearching;
   String _searchText = "";
 
   _SearchListState() {
     _searchQuery.addListener(() {
       if (_searchQuery.text.isEmpty) {
         setState(() {
-          _IsSearching = false;
+          _isSearching = false;
           _searchText = "";
         });
       } else {
         setState(() {
-          _IsSearching = true;
+          _isSearching = true;
           _searchText = _searchQuery.text;
         });
       }
@@ -47,12 +47,12 @@ class _SearchListState extends State<SearchList> {
   @override
   void initState() {
     super.initState();
-    _IsSearching = false;
+    _isSearching = false;
     init();
     pages.clear();
     pages.add(new ListView(
       padding: new EdgeInsets.symmetric(vertical: 8.0),
-      children: _IsSearching ? _buildSearchList() : _buildList(),
+      children: _isSearching ? _buildSearchList() : _buildList(),
     ));
     pages.add(Center(child: Icon(Icons.videogame_asset)));
     pages.add(Center(child: Icon(Icons.face)));
@@ -151,7 +151,7 @@ class _SearchListState extends State<SearchList> {
 
   void _handleSearchStart() {
     setState(() {
-      _IsSearching = true;
+      _isSearching = true;
     });
   }
 
@@ -165,7 +165,7 @@ class _SearchListState extends State<SearchList> {
         "Search Sample",
         style: new TextStyle(color: Colors.white),
       );
-      _IsSearching = false;
+      _isSearching = false;
       _searchQuery.clear();
     });
   }

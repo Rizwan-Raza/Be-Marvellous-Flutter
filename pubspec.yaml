@@ -31,6 +31,7 @@ dependencies:
   html: ^0.14.0+2
   fancy_bottom_navigation: ^0.3.2
   cached_network_image: ^1.1.1
+  floating_search_bar: ^0.2.0
 
   
 dev_dependencies:
