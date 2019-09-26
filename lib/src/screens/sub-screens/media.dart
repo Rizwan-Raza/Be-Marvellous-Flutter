@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 class MediaScreen extends StatelessWidget {
   final Bloc bloc;
   final int type;
-  const MediaScreen({this.bloc, this.type});
+  const MediaScreen({this.bloc, this.type, Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +36,7 @@ class MediaScreen extends StatelessWidget {
                 }
               },
               child: GridView.builder(
+                padding: EdgeInsets.zero,
                 itemCount: map.length,
                 reverse: false,
                 itemBuilder: (context, int index) {
@@ -79,7 +80,8 @@ class MediaScreen extends StatelessWidget {
             fit: BoxFit.cover,
             imageUrl: "https://terrigen-cdn-dev.marvel.com/content/prod/1x/" +
                 (movie.image ?? "default/explore-no-img.jpg"),
-            placeholder: (context, url) => Image.asset("assets/img/nothing.jpg"),
+            placeholder: (context, url) =>
+                Image.asset("assets/img/nothing.jpg"),
             errorWidget: (context, url, error) =>
                 Image.asset("assets/img/back.png"),
           ),

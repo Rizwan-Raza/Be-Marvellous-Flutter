@@ -13,11 +13,10 @@ class DataProvider {
     _database = FirebaseDatabase.instance;
     _database.setPersistenceEnabled(true);
     // database.setPersistenceCacheSizeBytes(10000000);
-    _list = _database.reference().child("order");
-    _order = _database.reference().child("list");
+    _list = _database.reference().child("list");
     _chars = _database.reference().child("characters");
-    _heroes = _database.reference().child("heroes");
-    _villain = _database.reference().child("villains");
+    _heroes = _database.reference().child("characters");
+    _villain = _database.reference().child("characters");
     _movie = _database.reference().child("movies");
     _tv = _database.reference().child("tv");
   }
@@ -28,10 +27,6 @@ class DataProvider {
 
   DatabaseReference getWatchList() {
     return this._list;
-  }
-
-  DatabaseReference getWatchOrder() {
-    return this._order;
   }
 
   DatabaseReference getCharacters() {

@@ -8,8 +8,10 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark.copyWith(
-      statusBarColor: Colors.transparent, //or set color with: Color(0xFF0000FF)
-    ));
+        statusBarColor: Colors.white10, //or set color with: Color(0xFF0000FF)
+        systemNavigationBarColor: Colors.white,
+        systemNavigationBarDividerColor: Colors.red,
+        systemNavigationBarIconBrightness: Brightness.dark));
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: "Be Marvellous",

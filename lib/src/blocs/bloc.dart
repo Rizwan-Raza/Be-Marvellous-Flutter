@@ -12,7 +12,6 @@ import 'package:html/dom.dart' as dom;
 class Bloc {
   static final DataProvider provider = DataProvider();
   final DatabaseReference watchList = provider.getWatchList();
-  final DatabaseReference watchOrder = provider.getWatchOrder();
   final DatabaseReference characters = provider.getCharacters();
   final DatabaseReference heroes = provider.getHeroes();
   final DatabaseReference villain = provider.getVillain();
@@ -21,10 +20,6 @@ class Bloc {
 
   DatabaseReference getWatchList() {
     return watchList;
-  }
-
-  DatabaseReference getWatchOrder() {
-    return watchOrder;
   }
 
   DatabaseReference getCharacters() {
@@ -108,13 +103,13 @@ class Bloc {
         desc: desc,
       );
       try {
-        watchOrder.child("${id++}").set(wItem.toJson());
+        watchList.child("${id++}").set(wItem.toJson());
       } catch (error) {
         print(error);
       }
     }
     print(id);
-    provider.getDatabase().purgeOutstandingWrites();
+    // provider.getDatabase().purgeOutstandingWrites();
     return id;
   }
 
@@ -146,9 +141,13 @@ class Bloc {
           json.decode(response.body)['data']['results']['data'];
       for (dynamic item in list) {
         try {
+          String key = item['link']['link'];
+          key = key.substring(key.lastIndexOf("/"));
+          Map itemMap = Map.from(item);
+          itemMap.addAll({"id": "${id++}", "type": "0"});
           characters
-              .child("${id++}")
-              .set(Character.fromMap(item).toJson())
+              .child(key)
+              .set(Character.fromMap(itemMap).toJson())
               .catchError(print);
         } catch (error) {
           print(error);
@@ -156,7 +155,7 @@ class Bloc {
       }
     }
     print(id);
-    provider.getDatabase().purgeOutstandingWrites();
+    // provider.getDatabase().purgeOutstandingWrites();
     return id;
   }
 
@@ -172,9 +171,13 @@ class Bloc {
           json.decode(response.body)['data']['results']['data'];
       for (dynamic item in list) {
         try {
+          String key = item['link']['link'];
+          key = key.substring(key.lastIndexOf("/"));
+          Map itemMap = Map.from(item);
+          itemMap.addAll({"type": "1"});
           heroes
-              .child("${id++}")
-              .set(Character.fromMap(item).toJson())
+              .child(key)
+              .set(Character.fromMap(itemMap).toJson())
               .catchError(print);
         } catch (error) {
           print(error);
@@ -182,7 +185,7 @@ class Bloc {
       }
     }
     print(id);
-    provider.getDatabase().purgeOutstandingWrites();
+    // provider.getDatabase().purgeOutstandingWrites();
     return id;
   }
 
@@ -198,9 +201,13 @@ class Bloc {
           json.decode(response.body)['data']['results']['data'];
       for (dynamic item in list) {
         try {
+          String key = item['link']['link'];
+          key = key.substring(key.lastIndexOf("/"));
+          Map itemMap = Map.from(item);
+          itemMap.addAll({"type": "2"});
           villain
-              .child("${id++}")
-              .set(Character.fromMap(item).toJson())
+              .child(key)
+              .set(Character.fromMap(itemMap).toJson())
               .catchError(print);
         } catch (error) {
           print(error);
@@ -208,7 +215,7 @@ class Bloc {
       }
     }
     print(id);
-    provider.getDatabase().purgeOutstandingWrites();
+    // provider.getDatabase().purgeOutstandingWrites();
     return id;
   }
 
@@ -224,17 +231,16 @@ class Bloc {
           json.decode(response.body)['data']['results']['data'];
       for (dynamic item in list) {
         try {
-          movies
-              .child("${id++}")
-              .set(Movie.fromMap(item).toJson())
-              .catchError(print);
+          String key = item['link']['link'];
+          key = key.substring(key.lastIndexOf("/"));
+          movies.child(key).set(Movie.fromMap(item).toJson()).catchError(print);
         } catch (error) {
           print(error);
         }
       }
     }
     print(id);
-    provider.getDatabase().purgeOutstandingWrites();
+    // provider.getDatabase().purgeOutstandingWrites();
     return id;
   }
 
@@ -250,17 +256,16 @@ class Bloc {
           json.decode(response.body)['data']['results']['data'];
       for (dynamic item in list) {
         try {
-          tvs
-              .child("${id++}")
-              .set(Movie.fromMap(item).toJson())
-              .catchError(print);
+          String key = item['link']['link'];
+          key = key.substring(key.lastIndexOf("/"));
+          tvs.child(key).set(Movie.fromMap(item).toJson()).catchError(print);
         } catch (error) {
           print(error);
         }
       }
     }
     print(id);
-    provider.getDatabase().purgeOutstandingWrites();
+    // provider.getDatabase().purgeOutstandingWrites();
     return id;
   }
 }

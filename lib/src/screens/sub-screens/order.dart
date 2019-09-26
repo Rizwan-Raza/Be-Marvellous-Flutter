@@ -17,13 +17,16 @@ class OrderScreen extends StatefulWidget {
   _OrderScreenState createState() => _OrderScreenState();
 }
 
-class _OrderScreenState extends State<OrderScreen>
-    with AutomaticKeepAliveClientMixin {
+class _OrderScreenState extends State<OrderScreen> {
   Bloc bloc;
   DatabaseReference ref;
   SharedPreferences prefs;
   List<dynamic> watched = [];
   int type;
+  bool checkShow = true;
+
+  bool reverse = false;
+  bool addTopStuff = false;
 
   _OrderScreenState() {
     init();
@@ -34,14 +37,13 @@ class _OrderScreenState extends State<OrderScreen>
     this.prefs = await SharedPreferences.getInstance();
     this.watched = json.decode(prefs.getString('watchList') ?? '[]');
     this.bloc = widget.bloc;
-    this.ref = bloc.getWatchOrder();
+    this.ref = bloc.getWatchList();
     this.type = widget.type;
     // print('Pressed $watched times.');
   }
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     type = widget.type;
     print("Method Run $type");
     return Column(
@@ -55,13 +57,15 @@ class _OrderScreenState extends State<OrderScreen>
               padding: EdgeInsets.zero,
               query: ref ??
                   ((bloc == null)
-                      ? widget.bloc.getWatchOrder()
-                      : bloc.getWatchOrder()),
-              reverse: false,
+                      ? widget.bloc.getWatchList()
+                      : bloc.getWatchList()),
               itemBuilder: (_, DataSnapshot snapshot,
                   Animation<double> animation, int x) {
                 bool skipThis = false;
                 WatchItem currentItem = WatchItem.fromMap(snapshot.value);
+                if (!checkShow && watched.contains(currentItem.id)) {
+                  skipThis = true;
+                }
                 switch (type) {
                   case 2:
                     if (currentItem.type != "movie") {
@@ -90,11 +94,18 @@ class _OrderScreenState extends State<OrderScreen>
                   default:
                     break;
                 }
-                if (skipThis)
-                  return Container(
-                    color: Colors.red,
-                  );
-                return getWatchItemTile(currentItem);
+                List<Widget> list = <Widget>[];
+                if (!addTopStuff) {
+                  list.add(getFilterHead());
+                  list.add(showChecked());
+                  addTopStuff = true;
+                }
+                if (!skipThis) {
+                  list.add(getWatchItemTile(currentItem));
+                }
+                return Column(
+                  children: list,
+                );
               },
               defaultChild: Center(child: CircularProgressIndicator()),
             ),
@@ -145,6 +156,57 @@ class _OrderScreenState extends State<OrderScreen>
     );
   }
 
-  @override
-  bool get wantKeepAlive => true;
+  Widget getFilterHead() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: RawMaterialButton(
+            textStyle: TextStyle(
+              fontFamily: "Product-Sans",
+              fontWeight: FontWeight.w600,
+              color: Colors.black54,
+            ),
+            onPressed: () {
+              setState(() {
+                reverse = !reverse;
+              });
+            },
+            child: Row(
+              children: <Widget>[
+                Text("Released "),
+                Icon(
+                  reverse ? Icons.arrow_upward : Icons.arrow_downward,
+                  size: 16.0,
+                ),
+              ],
+            ),
+          ),
+        ),
+        IconButton(
+          onPressed: () {
+            print("Hello");
+          },
+          icon: Icon(
+            Icons.tune,
+            color: Colors.black54,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget showChecked() {
+    return SwitchListTile(
+      title: const Text('Show Checked Items'),
+      dense: true,
+      value: checkShow,
+      onChanged: (bool value) {
+        setState(() {
+          checkShow = !checkShow;
+        });
+      },
+    );
+  }
 }
