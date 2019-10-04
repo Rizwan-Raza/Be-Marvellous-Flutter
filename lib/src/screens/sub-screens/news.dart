@@ -44,69 +44,73 @@ class _OrderScreenState extends State<OrderScreen> {
   @override
   Widget build(BuildContext context) {
     type = widget.type;
-    print("Method Run, Order List");
-    return Flexible(
-      child: RefreshIndicator(
-        onRefresh: () async {
-          return await bloc.putWatchOrder();
-        },
-        child: FirebaseAnimatedList(
-          physics: AlwaysScrollableScrollPhysics(),
-          padding: EdgeInsets.zero,
-          query: ref ??
-              ((bloc == null)
-                  ? widget.bloc.getWatchList()
-                  : bloc.getWatchList()),
-          itemBuilder: (_, DataSnapshot snapshot,
-              Animation<double> animation, int x) {
-            bool skipThis = false;
-            WatchItem currentItem = WatchItem.fromMap(snapshot.value);
-            if (!checkShow && watched.contains(currentItem.id)) {
-              skipThis = true;
-            }
-            switch (type) {
-              case 2:
-                if (currentItem.type != "movie") {
+    print("Method Run, News List");
+    return Column(
+      children: <Widget>[
+        Flexible(
+          child: RefreshIndicator(
+            onRefresh: () async {
+              return await bloc.putWatchOrder();
+            },
+            child: FirebaseAnimatedList(
+              physics: AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.zero,
+              query: ref ??
+                  ((bloc == null)
+                      ? widget.bloc.getWatchList()
+                      : bloc.getWatchList()),
+              itemBuilder: (_, DataSnapshot snapshot,
+                  Animation<double> animation, int x) {
+                bool skipThis = false;
+                WatchItem currentItem = WatchItem.fromMap(snapshot.value);
+                if (!checkShow && watched.contains(currentItem.id)) {
                   skipThis = true;
                 }
-                break;
-              case 3:
-                if (currentItem.type != "tv") {
-                  skipThis = true;
+                switch (type) {
+                  case 2:
+                    if (currentItem.type != "movie") {
+                      skipThis = true;
+                    }
+                    break;
+                  case 3:
+                    if (currentItem.type != "tv") {
+                      skipThis = true;
+                    }
+                    break;
+                  case 4:
+                    if (currentItem.type != "comic" &&
+                        currentItem.type != "book") {
+                      skipThis = true;
+                    }
+                    break;
+                  case 5:
+                    if (currentItem.type != "movie" &&
+                        currentItem.type != "tv" &&
+                        currentItem.type != "short_film") {
+                      skipThis = true;
+                    }
+                    break;
+                  case 1:
+                  default:
+                    break;
                 }
-                break;
-              case 4:
-                if (currentItem.type != "comic" &&
-                    currentItem.type != "book") {
-                  skipThis = true;
+                List<Widget> list = <Widget>[];
+                if (x == 0) {
+                  list.add(getFilterHead());
+                  list.add(showChecked());
                 }
-                break;
-              case 5:
-                if (currentItem.type != "movie" &&
-                    currentItem.type != "tv" &&
-                    currentItem.type != "short_film") {
-                  skipThis = true;
+                if (!skipThis) {
+                  list.add(getWatchItemTile(currentItem));
                 }
-                break;
-              case 1:
-              default:
-                break;
-            }
-            List<Widget> list = <Widget>[];
-            if (x == 0) {
-              list.add(getFilterHead());
-              list.add(showChecked());
-            }
-            if (!skipThis) {
-              list.add(getWatchItemTile(currentItem));
-            }
-            return Column(
-              children: list,
-            );
-          },
-          defaultChild: Center(child: CircularProgressIndicator()),
+                return Column(
+                  children: list,
+                );
+              },
+              defaultChild: Center(child: CircularProgressIndicator()),
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
 

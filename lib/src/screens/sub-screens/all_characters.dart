@@ -26,6 +26,8 @@ class _AllCharactersState extends State<AllCharacters>
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           List<dynamic> map = snapshot.data.snapshot.value.values.toList();
+          // print(map);
+          map.sort((a, b) => a['link'].compareTo(b['link']));
           return RefreshIndicator(
             onRefresh: () async {
               switch (widget.type) {
@@ -39,6 +41,7 @@ class _AllCharactersState extends State<AllCharacters>
               }
             },
             child: GridView.builder(
+              physics: AlwaysScrollableScrollPhysics(),
               padding: EdgeInsets.zero,
               itemCount: map.length,
               reverse: false,
@@ -59,7 +62,7 @@ class _AllCharactersState extends State<AllCharacters>
   }
 
   Widget getCharacterTile(BuildContext context, Character char) {
-    return GestureDetector(
+    return InkWell(
       onTap: () {
         Navigator.push(
           context,

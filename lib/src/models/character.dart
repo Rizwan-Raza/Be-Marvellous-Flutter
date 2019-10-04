@@ -27,7 +27,10 @@ class Character {
         image =
             ((map['image'] is Map) ? map['image']['filename'] : map['image']),
         type = int.parse(map['type'] ?? "0"),
-        link = ((map['link'] is Map) ? map['link']['link'] : map['link']);
+        link = ((map['link'] is Map)
+            ? map['link']['link'] +
+                (map['link']['context'] == "live_action" ? "/in-comics" : "")
+            : map['link']);
 
   Map<String, String> toJson() {
     return {
