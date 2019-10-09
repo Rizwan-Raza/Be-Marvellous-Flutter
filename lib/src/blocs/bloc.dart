@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:be_marvellous/src/models/character.dart';
+import 'package:be_marvellous/src/models/character_detail.dart';
 import 'package:be_marvellous/src/models/movies.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -17,6 +18,7 @@ class Bloc {
   DatabaseReference _characters;
   DatabaseReference _movies;
   DatabaseReference _tvs;
+  DatabaseReference _char_details;
   DatabaseReference _wallpapers;
   Bloc() {
     _database = FirebaseDatabase.instance;
@@ -27,6 +29,7 @@ class Bloc {
     _characters = _database.reference().child("characters");
     _movies = _database.reference().child("movies");
     _tvs = _database.reference().child("tv");
+    _char_details = _database.reference().child("char_details");
     _wallpapers = _database.reference().child("wallpapers");
     init();
   }
@@ -51,6 +54,10 @@ class Bloc {
 
   DatabaseReference getTvs() {
     return _tvs;
+  }
+
+  DatabaseReference getCharacterDetail() {
+    return _char_details;
   }
 
   DatabaseReference getWallpapers() {
@@ -202,13 +209,15 @@ class Bloc {
       for (dynamic item in list) {
         try {
           String key = item['link']['link'];
+          String context = item['link']['context'];
           key = key.substring(key.lastIndexOf("/"));
           Map itemMap = Map.from(item);
-          itemMap.addAll({"type": "1"});
+          itemMap.addAll({"type": "1", "context": context});
           _characters
               .child(key)
               .set(Character.fromMap(itemMap).toJson())
               .catchError(print);
+          id++;
         } catch (error) {
           print(error);
         }
@@ -232,13 +241,16 @@ class Bloc {
       for (dynamic item in list) {
         try {
           String key = item['link']['link'];
+          String context = item['link']['context'];
           key = key.substring(key.lastIndexOf("/"));
           Map itemMap = Map.from(item);
-          itemMap.addAll({"type": "2"});
+          itemMap.addAll({"type": "2", "context": context});
+
           _characters
               .child(key)
               .set(Character.fromMap(itemMap).toJson())
               .catchError(print);
+          id++;
         } catch (error) {
           print(error);
         }
@@ -267,6 +279,7 @@ class Bloc {
               .child(key)
               .set(Movie.fromMap(item).toJson())
               .catchError(print);
+          id++;
         } catch (error) {
           print(error);
         }
@@ -292,6 +305,7 @@ class Bloc {
           String key = item['link']['link'];
           key = key.substring(key.lastIndexOf("/"));
           _tvs.child(key).set(Movie.fromMap(item).toJson()).catchError(print);
+          id++;
         } catch (error) {
           print(error);
         }
@@ -332,5 +346,44 @@ class Bloc {
     print(id);
     // provider.getDatabase().purgeOutstandingWrites();
     return id;
+  }
+
+  Future<int> putCharacterDetails(Character item) async {
+    List<dom.Element> powerGrid = <dom.Element>[];
+    List<dom.Element> shortBio = <dom.Element>[];
+    Response response = await Client().get("https://marvel.com" +
+        item.link +
+        (item.context != "comic" ? "/in-comics" : ""));
+    response.headers['content-type'] = "text/html; charset=UTF-8";
+    var document = parse(response.body, encoding: 'gzip');
+    powerGrid.addAll(
+        document.querySelectorAll("body .power-grid .power-circle__wrapper"));
+    shortBio.addAll(
+        document.querySelectorAll("body .railExploreBio .bioheader__stats"));
+
+    Map<String, String> charDetails = Map<String, String>();
+
+    for (dom.Element dItem in powerGrid) {
+      String currentPowerRating =
+          dItem.querySelector(".power-circle__rating").text;
+      String currentPowerLabel =
+          dItem.querySelector(".power-circle__label").text;
+
+      charDetails.addAll(
+          {currentPowerLabel.trim().replaceAll(" ", "_"): currentPowerRating});
+    }
+
+    for (dom.Element dItem in shortBio) {
+      String label = dItem.querySelector(".bioheader__label").text;
+      String stat = dItem.querySelector(".bioheader__stat").text;
+      // print(currentPowerRating);
+      charDetails.addAll({label: stat});
+    }
+    CharacterDetail charD = CharacterDetail.fromMap(charDetails);
+    _char_details
+        .child(item.link.substring(item.link.lastIndexOf("/")))
+        .set(charD.toJson())
+        .catchError(print);
+    return 0;
   }
 }

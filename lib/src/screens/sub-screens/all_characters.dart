@@ -66,7 +66,9 @@ class _AllCharactersState extends State<AllCharacters>
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => CharacterDetail(item: char)),
+          MaterialPageRoute(
+              builder: (context) =>
+                  CharacterDetail(bloc: widget.bloc, item: char)),
         );
       },
       child: GridTile(

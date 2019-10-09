@@ -1,13 +1,12 @@
+import 'package:be_marvellous/src/blocs/bloc.dart';
 import 'package:be_marvellous/src/models/character.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:html/parser.dart';
-import 'package:html/dom.dart' as dom;
-import 'package:http/http.dart';
 
 class CharacterDetail extends StatefulWidget {
-  const CharacterDetail({this.item, Key key}) : super(key: key);
+  const CharacterDetail({this.bloc, this.item, Key key}) : super(key: key);
   final Character item;
+  final Bloc bloc;
 
   @override
   _CharacterDetailState createState() => _CharacterDetailState();
@@ -84,50 +83,31 @@ class _CharacterDetailState extends State<CharacterDetail> {
                 widget.item.desc != null
                     ? Text("${widget.item.desc}")
                     : Container(),
+                StreamBuilder(
+                  stream: widget.bloc
+                      .getCharacterDetail()
+                      .child(widget.item.link
+                          .substring(widget.item.link.lastIndexOf("/")))
+                      .onValue,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      return Text(snapshot.data.toString());
+                    } else {
+                      return Text("Loading");
+                    }
+                  },
+                  initialData: Center(child: CircularProgressIndicator()),
+                ),
                 RaisedButton(
                   child: Text("Fetch Details"),
                   onPressed: () {
-                    fetchDetail(widget.item.link);
+                    // print(widget.item.link);
+                    widget.bloc.putCharacterDetails(widget.item);
                   },
                 ),
               ],
             ),
           )),
     );
-  }
-
-  void fetchDetail(String link) async {
-    List<dom.Element> powerGrid = <dom.Element>[];
-    List<dom.Element> shortBio = <dom.Element>[];
-    Response response = await Client().get("https://marvel.com" + link);
-    response.headers['content-type'] = "text/html; charset=UTF-8";
-    var document = parse(response.body, encoding: 'gzip');
-    powerGrid.addAll(
-        document.querySelectorAll("body .power-grid .power-circle__wrapper"));
-    shortBio.addAll(document.querySelectorAll("body .railExploreBio"));
-
-    for (dom.Element item in powerGrid) {
-      String currentPowerRating =
-          item.querySelector(".power-circle__rating").text;
-      String currentPowerLabel =
-          item.querySelector(".power-circle__label").text;
-
-      print(currentPowerRating);
-      print(currentPowerLabel
-          .trim()
-          .split(" ")
-          .map((s) => '${s.substring(0, 0).toUpperCase()}${s.substring(1)}')
-          .join(""));
-    }
-
-    for (dom.Element item in powerGrid) {
-      // String currentPowerRating =
-      //     item.querySelector(".power-circle__rating").text;
-      // String currentPowerLabel =
-      //     item.querySelector(".power-circle__label").text;
-
-      // print(currentPowerRating);
-      print(item.innerHtml);
-    }
   }
 }
