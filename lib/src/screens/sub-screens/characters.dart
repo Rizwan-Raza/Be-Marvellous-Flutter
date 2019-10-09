@@ -20,15 +20,15 @@ class CharactersScreen extends StatelessWidget {
             child: TabBarView(
               children: <Widget>[
                 AllCharacters(
-                    ref: bloc.getCharacters().orderByKey(),
+                    ref: bloc.getCharacters().orderByChild("id"),
                     type: 1,
                     bloc: bloc),
                 AllCharacters(
-                    ref: bloc.getHeroes().orderByChild("type").equalTo("1"),
+                    ref: bloc.getCharacters().orderByChild("type").equalTo("1"),
                     type: 2,
                     bloc: bloc),
                 AllCharacters(
-                    ref: bloc.getVillain().orderByChild("type").equalTo("2"),
+                    ref: bloc.getCharacters().orderByChild("type").equalTo("2"),
                     type: 3,
                     bloc: bloc),
               ],
@@ -44,8 +44,8 @@ class CharactersScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: TabBar(
         isScrollable: true,
-        indicatorSize: TabBarIndicatorSize.label,
         labelColor: Colors.red,
+        indicatorSize: TabBarIndicatorSize.label,
         unselectedLabelColor: Colors.black87,
         tabs: <Widget>[
           Tab(child: Text("All")),

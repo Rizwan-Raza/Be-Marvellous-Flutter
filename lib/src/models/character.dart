@@ -6,6 +6,7 @@ class Character {
   String desc;
   String image;
   int type;
+  String context;
   String link;
 
   Character(
@@ -16,6 +17,7 @@ class Character {
       this.desc,
       this.image,
       this.type,
+      this.context,
       this.link});
 
   Character.fromMap(Map<dynamic, dynamic> map)
@@ -27,7 +29,8 @@ class Character {
         image =
             ((map['image'] is Map) ? map['image']['filename'] : map['image']),
         type = int.parse(map['type'] ?? "0"),
-        link = ((map['link'] is Map) ? map['link']['link'] : map['link']);
+        context = map['context'],
+        link = (map['link'] is Map) ? map['link']['link'] : map['link'];
 
   Map<String, String> toJson() {
     return {
@@ -38,6 +41,7 @@ class Character {
       "desc": desc,
       "image": image,
       "type": "$type",
+      "context": context,
       "link": link
     };
   }

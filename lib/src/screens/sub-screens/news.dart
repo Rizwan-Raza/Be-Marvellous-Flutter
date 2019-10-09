@@ -44,7 +44,7 @@ class _OrderScreenState extends State<OrderScreen> {
   @override
   Widget build(BuildContext context) {
     type = widget.type;
-    print("Method Run, Order List");
+    print("Method Run, News List");
     return Column(
       children: <Widget>[
         Flexible(
@@ -52,7 +52,62 @@ class _OrderScreenState extends State<OrderScreen> {
             onRefresh: () async {
               return await bloc.putWatchOrder();
             },
-            child: _buildList(),
+            child: FirebaseAnimatedList(
+              physics: AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.zero,
+              query: ref ??
+                  ((bloc == null)
+                      ? widget.bloc.getWatchList()
+                      : bloc.getWatchList()),
+              itemBuilder: (_, DataSnapshot snapshot,
+                  Animation<double> animation, int x) {
+                bool skipThis = false;
+                WatchItem currentItem = WatchItem.fromMap(snapshot.value);
+                if (!checkShow && watched.contains(currentItem.id)) {
+                  skipThis = true;
+                }
+                switch (type) {
+                  case 2:
+                    if (currentItem.type != "movie") {
+                      skipThis = true;
+                    }
+                    break;
+                  case 3:
+                    if (currentItem.type != "tv") {
+                      skipThis = true;
+                    }
+                    break;
+                  case 4:
+                    if (currentItem.type != "comic" &&
+                        currentItem.type != "book") {
+                      skipThis = true;
+                    }
+                    break;
+                  case 5:
+                    if (currentItem.type != "movie" &&
+                        currentItem.type != "tv" &&
+                        currentItem.type != "short_film") {
+                      skipThis = true;
+                    }
+                    break;
+                  case 1:
+                  default:
+                    break;
+                }
+                List<Widget> list = <Widget>[];
+                if (x == 0) {
+                  list.add(getFilterHead());
+                  list.add(showChecked());
+                }
+                if (!skipThis) {
+                  list.add(getWatchItemTile(currentItem));
+                }
+                return Column(
+                  children: list,
+                );
+              },
+              defaultChild: Center(child: CircularProgressIndicator()),
+            ),
           ),
         ),
       ],
@@ -67,7 +122,9 @@ class _OrderScreenState extends State<OrderScreen> {
         ),
         CheckboxListTile(
           isThreeLine: true,
-          title: Text("${item.id + 1}: " + item.title),
+          title: Text(
+              // "${item.id + 1}: " +
+              item.title),
           subtitle: Text((item.type == "tv" ? item.subtitle : item.getType()) +
               "\n" +
               (item.type == "movie"
@@ -85,7 +142,7 @@ class _OrderScreenState extends State<OrderScreen> {
             setState(() {
               if (value) {
                 watched.add(item.id);
-                // print(watched.toList());
+                print(watched.toList());
               } else {
                 watched.remove(item.id);
               }
@@ -149,65 +206,6 @@ class _OrderScreenState extends State<OrderScreen> {
           checkShow = !checkShow;
         });
       },
-    );
-  }
-
-  Widget _buildList() {
-    return FirebaseAnimatedList(
-      physics: AlwaysScrollableScrollPhysics(),
-      sort: (a, b) => reverse
-          ? int.parse(b.key).compareTo(int.parse(a.key))
-          : int.parse(a.key).compareTo(int.parse(b.key)),
-      padding: EdgeInsets.zero,
-      query: ref ??
-          ((bloc == null) ? widget.bloc.getWatchList() : bloc.getWatchList()),
-      itemBuilder:
-          (_, DataSnapshot snapshot, Animation<double> animation, int x) {
-        bool skipThis = false;
-        WatchItem currentItem = WatchItem.fromMap(snapshot.value);
-        if (!checkShow && watched.contains(currentItem.id)) {
-          skipThis = true;
-        }
-        switch (type) {
-          case 2:
-            if (currentItem.type != "movie") {
-              skipThis = true;
-            }
-            break;
-          case 3:
-            if (currentItem.type != "tv") {
-              skipThis = true;
-            }
-            break;
-          case 4:
-            if (currentItem.type != "comic" && currentItem.type != "book") {
-              skipThis = true;
-            }
-            break;
-          case 5:
-            if (currentItem.type != "movie" &&
-                currentItem.type != "tv" &&
-                currentItem.type != "short_film") {
-              skipThis = true;
-            }
-            break;
-          case 1:
-          default:
-            break;
-        }
-        List<Widget> list = <Widget>[];
-        if (x == 0) {
-          list.add(getFilterHead());
-          list.add(showChecked());
-        }
-        if (!skipThis) {
-          list.add(getWatchItemTile(currentItem));
-        }
-        return Column(
-          children: list,
-        );
-      },
-      defaultChild: Center(child: CircularProgressIndicator()),
     );
   }
 }

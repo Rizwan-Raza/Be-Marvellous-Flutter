@@ -7,6 +7,11 @@
     <item>
         <bitmap
             android:gravity="center"
-            android:src="@drawable/back" />
+            android:src="@drawable/splash" />
     </item>
+    <!-- <item>
+        <bitmap
+            android:gravity="center"
+            android:src="@drawable/ic_launcher_web" />
+    </item> -->
 </layer-list>

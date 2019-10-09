@@ -1,45 +1,82 @@
 import 'dart:convert';
 import 'package:be_marvellous/src/models/character.dart';
+import 'package:be_marvellous/src/models/character_detail.dart';
 import 'package:be_marvellous/src/models/movies.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import '../models/watch_item.dart';
 import 'package:firebase_database/firebase_database.dart';
-import '../resources/data_provider.dart';
 import 'package:html/parser.dart';
 import 'package:http/http.dart';
 import 'package:html/dom.dart' as dom;
 
 class Bloc {
-  static final DataProvider provider = DataProvider();
-  final DatabaseReference watchList = provider.getWatchList();
-  final DatabaseReference characters = provider.getCharacters();
-  final DatabaseReference heroes = provider.getHeroes();
-  final DatabaseReference villain = provider.getVillain();
-  final DatabaseReference movies = provider.getMovies();
-  final DatabaseReference tvs = provider.getTvs();
+  FirebaseDatabase _database;
+  FirebaseAuth _auth;
+  DatabaseReference _watchList;
+  DatabaseReference _characters;
+  DatabaseReference _movies;
+  DatabaseReference _tvs;
+  DatabaseReference _char_details;
+  DatabaseReference _wallpapers;
+  Bloc() {
+    _database = FirebaseDatabase.instance;
+    _auth = FirebaseAuth.instance;
+    _database.setPersistenceEnabled(true);
+    // database.setPersistenceCacheSizeBytes(10000000);
+    _watchList = _database.reference().child("list");
+    _characters = _database.reference().child("characters");
+    _movies = _database.reference().child("movies");
+    _tvs = _database.reference().child("tv");
+    _char_details = _database.reference().child("char_details");
+    _wallpapers = _database.reference().child("wallpapers");
+    init();
+  }
+
+  void init() async {
+    if (!((await _auth.currentUser()) != null)) {
+      login();
+    }
+  }
 
   DatabaseReference getWatchList() {
-    return watchList;
+    return _watchList;
   }
 
   DatabaseReference getCharacters() {
-    return characters;
-  }
-
-  DatabaseReference getHeroes() {
-    return heroes;
-  }
-
-  DatabaseReference getVillain() {
-    return villain;
+    return _characters;
   }
 
   DatabaseReference getMovies() {
-    return movies;
+    return _movies;
   }
 
   DatabaseReference getTvs() {
-    return tvs;
+    return _tvs;
+  }
+
+  DatabaseReference getCharacterDetail() {
+    return _char_details;
+  }
+
+  DatabaseReference getWallpapers() {
+    return _wallpapers;
+  }
+
+  Future<FirebaseUser> getUser() {
+    return _auth.currentUser();
+  }
+
+  Future<FirebaseUser> login() async {
+    final GoogleSignInAccount googleAccount = await GoogleSignIn().signIn();
+    final GoogleSignInAuthentication googleAuth =
+        await googleAccount.authentication;
+    return (await _auth.signInWithCredential(GoogleAuthProvider.getCredential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    )))
+        .user;
   }
 
   Future<int> putWatchOrder() async {
@@ -103,7 +140,7 @@ class Bloc {
         desc: desc,
       );
       try {
-        watchList.child("${id++}").set(wItem.toJson());
+        _watchList.child("${id++}").set(wItem.toJson());
       } catch (error) {
         print(error);
       }
@@ -145,7 +182,7 @@ class Bloc {
           key = key.substring(key.lastIndexOf("/"));
           Map itemMap = Map.from(item);
           itemMap.addAll({"id": "${id++}", "type": "0"});
-          characters
+          _characters
               .child(key)
               .set(Character.fromMap(itemMap).toJson())
               .catchError(print);
@@ -172,13 +209,15 @@ class Bloc {
       for (dynamic item in list) {
         try {
           String key = item['link']['link'];
+          String context = item['link']['context'];
           key = key.substring(key.lastIndexOf("/"));
           Map itemMap = Map.from(item);
-          itemMap.addAll({"type": "1"});
-          heroes
+          itemMap.addAll({"type": "1", "context": context});
+          _characters
               .child(key)
               .set(Character.fromMap(itemMap).toJson())
               .catchError(print);
+          id++;
         } catch (error) {
           print(error);
         }
@@ -202,13 +241,16 @@ class Bloc {
       for (dynamic item in list) {
         try {
           String key = item['link']['link'];
+          String context = item['link']['context'];
           key = key.substring(key.lastIndexOf("/"));
           Map itemMap = Map.from(item);
-          itemMap.addAll({"type": "2"});
-          villain
+          itemMap.addAll({"type": "2", "context": context});
+
+          _characters
               .child(key)
               .set(Character.fromMap(itemMap).toJson())
               .catchError(print);
+          id++;
         } catch (error) {
           print(error);
         }
@@ -233,7 +275,11 @@ class Bloc {
         try {
           String key = item['link']['link'];
           key = key.substring(key.lastIndexOf("/"));
-          movies.child(key).set(Movie.fromMap(item).toJson()).catchError(print);
+          _movies
+              .child(key)
+              .set(Movie.fromMap(item).toJson())
+              .catchError(print);
+          id++;
         } catch (error) {
           print(error);
         }
@@ -258,7 +304,8 @@ class Bloc {
         try {
           String key = item['link']['link'];
           key = key.substring(key.lastIndexOf("/"));
-          tvs.child(key).set(Movie.fromMap(item).toJson()).catchError(print);
+          _tvs.child(key).set(Movie.fromMap(item).toJson()).catchError(print);
+          id++;
         } catch (error) {
           print(error);
         }
@@ -267,5 +314,76 @@ class Bloc {
     print(id);
     // provider.getDatabase().purgeOutstandingWrites();
     return id;
+  }
+
+  Future<int> putWallpapers() async {
+    List<String> paginatedSource = <String>[
+      'https://wallpaperaccess.com/marvel-phone',
+      'https://wallpaperaccess.com/avengers-phone',
+      'https://wallpaperaccess.com/deadpool-phone',
+    ];
+
+    List<dom.Element> listItems = <dom.Element>[];
+    for (String url in paginatedSource) {
+      Response response = await Client().get(url);
+      response.headers['content-type'] = "text/html; charset=UTF-8";
+      var document = parse(response.body, encoding: 'gzip');
+      listItems.addAll(document
+          .querySelectorAll('.pusher .flexbox.column.single_image > div[id]'));
+    }
+
+    int id = 0;
+    for (dom.Element item in listItems) {
+      // print(item.attributes['data-fullimg']);
+      try {
+        _wallpapers
+            .child("${id++}")
+            .set({"image": item.attributes['data-fullimg']});
+      } catch (error) {
+        print(error);
+      }
+    }
+    print(id);
+    // provider.getDatabase().purgeOutstandingWrites();
+    return id;
+  }
+
+  Future<int> putCharacterDetails(Character item) async {
+    List<dom.Element> powerGrid = <dom.Element>[];
+    List<dom.Element> shortBio = <dom.Element>[];
+    Response response = await Client().get("https://marvel.com" +
+        item.link +
+        (item.context != "comic" ? "/in-comics" : ""));
+    response.headers['content-type'] = "text/html; charset=UTF-8";
+    var document = parse(response.body, encoding: 'gzip');
+    powerGrid.addAll(
+        document.querySelectorAll("body .power-grid .power-circle__wrapper"));
+    shortBio.addAll(
+        document.querySelectorAll("body .railExploreBio .bioheader__stats"));
+
+    Map<String, String> charDetails = Map<String, String>();
+
+    for (dom.Element dItem in powerGrid) {
+      String currentPowerRating =
+          dItem.querySelector(".power-circle__rating").text;
+      String currentPowerLabel =
+          dItem.querySelector(".power-circle__label").text;
+
+      charDetails.addAll(
+          {currentPowerLabel.trim().replaceAll(" ", "_"): currentPowerRating});
+    }
+
+    for (dom.Element dItem in shortBio) {
+      String label = dItem.querySelector(".bioheader__label").text;
+      String stat = dItem.querySelector(".bioheader__stat").text;
+      // print(currentPowerRating);
+      charDetails.addAll({label: stat});
+    }
+    CharacterDetail charD = CharacterDetail.fromMap(charDetails);
+    _char_details
+        .child(item.link.substring(item.link.lastIndexOf("/")))
+        .set(charD.toJson())
+        .catchError(print);
+    return 0;
   }
 }

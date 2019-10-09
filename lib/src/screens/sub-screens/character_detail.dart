@@ -1,10 +1,18 @@
+import 'package:be_marvellous/src/blocs/bloc.dart';
 import 'package:be_marvellous/src/models/character.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
-class CharacterDetail extends StatelessWidget {
-  const CharacterDetail({this.item, Key key}) : super(key: key);
+class CharacterDetail extends StatefulWidget {
+  const CharacterDetail({this.bloc, this.item, Key key}) : super(key: key);
   final Character item;
+  final Bloc bloc;
+
+  @override
+  _CharacterDetailState createState() => _CharacterDetailState();
+}
+
+class _CharacterDetailState extends State<CharacterDetail> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -17,7 +25,7 @@ class CharacterDetail extends StatelessWidget {
                 flexibleSpace: FlexibleSpaceBar(
                   centerTitle: false,
                   title: Text(
-                    "${item.title}",
+                    "${widget.item.title}",
                     style: TextStyle(
                       shadows: [
                         Shadow(
@@ -33,7 +41,7 @@ class CharacterDetail extends StatelessWidget {
                     fit: BoxFit.cover,
                     imageUrl:
                         "https://terrigen-cdn-dev.marvel.com/content/prod/1x/" +
-                            (item.image ?? "default/explore-no-img.jpg"),
+                            (widget.item.image ?? "default/explore-no-img.jpg"),
                     placeholder: (context, url) =>
                         Image.asset("assets/img/nothing.jpg"),
                     errorWidget: (context, url, error) =>
@@ -48,11 +56,12 @@ class CharacterDetail extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                item.subtitle != null
+                widget.item.subtitle != null
                     ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Text(
-                            "${item.subtitle}",
+                            "${widget.item.subtitle}",
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 36.0),
                           ),
@@ -60,18 +69,42 @@ class CharacterDetail extends StatelessWidget {
                         ],
                       )
                     : Container(),
-                item.microDesc != null
+                widget.item.microDesc != null
                     ? Column(
                         children: <Widget>[
                           Text(
-                            "${item.microDesc}",
+                            "${widget.item.microDesc}",
                             style: TextStyle(fontSize: 18.0),
                           ),
                           Divider(),
                         ],
                       )
                     : Container(),
-                item.microDesc != null ? Text("${item.desc}") : Container(),
+                widget.item.desc != null
+                    ? Text("${widget.item.desc}")
+                    : Container(),
+                StreamBuilder(
+                  stream: widget.bloc
+                      .getCharacterDetail()
+                      .child(widget.item.link
+                          .substring(widget.item.link.lastIndexOf("/")))
+                      .onValue,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      return Text(snapshot.data.toString());
+                    } else {
+                      return Text("Loading");
+                    }
+                  },
+                  initialData: Center(child: CircularProgressIndicator()),
+                ),
+                RaisedButton(
+                  child: Text("Fetch Details"),
+                  onPressed: () {
+                    // print(widget.item.link);
+                    widget.bloc.putCharacterDetails(widget.item);
+                  },
+                ),
               ],
             ),
           )),

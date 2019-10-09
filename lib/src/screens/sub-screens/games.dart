@@ -1,29 +1,26 @@
-import 'package:be_marvellous/src/screens/sub-screens/movie.dart';
-import 'package:be_marvellous/src/screens/sub-screens/wallpapers.dart';
+import 'package:be_marvellous/src/screens/sub-screens/guess_game.dart';
+import 'package:be_marvellous/src/screens/sub-screens/quiz_game.dart';
 import 'package:flutter/material.dart';
 import '../../blocs/bloc.dart';
 
-class MediaScreen extends StatelessWidget {
+class GamesScreen extends StatelessWidget {
   final Bloc bloc;
   final int type;
-  MediaScreen({this.bloc, this.type, Key key}) : super(key: key);
+  GamesScreen({this.bloc, this.type, Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3,
+      length: 2,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           tabs(),
+          Divider(height: 0),
           Container(
             height: MediaQuery.of(context).size.height - 190,
             child: TabBarView(
-              children: <Widget>[
-                Movies(ref: bloc.getMovies().orderByKey(), type: 1, bloc: bloc),
-                Movies(ref: bloc.getTvs(), type: 2, bloc: bloc),
-                Wallpapers(ref: bloc.getWallpapers(), bloc: bloc),
-              ],
+              children: <Widget>[GuessGame(), QuizGame()],
             ),
           )
         ],
@@ -40,9 +37,8 @@ class MediaScreen extends StatelessWidget {
         indicatorSize: TabBarIndicatorSize.label,
         unselectedLabelColor: Colors.black87,
         tabs: <Widget>[
-          Tab(child: Text("Movies")),
-          Tab(child: Text("TV Shows")),
-          Tab(child: Text("Wallpapers")),
+          Tab(child: Text("Who's Who")),
+          Tab(child: Text("MaQuiz")),
         ],
       ),
     );
