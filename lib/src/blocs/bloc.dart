@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:be_marvellous/src/models/character.dart';
 import 'package:be_marvellous/src/models/character_detail.dart';
 import 'package:be_marvellous/src/models/movies.dart';
+import 'package:be_marvellous/src/models/news.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -18,7 +19,8 @@ class Bloc {
   DatabaseReference _characters;
   DatabaseReference _movies;
   DatabaseReference _tvs;
-  DatabaseReference _char_details;
+  DatabaseReference _charDetails;
+  DatabaseReference _news;
   DatabaseReference _wallpapers;
   Bloc() {
     _database = FirebaseDatabase.instance;
@@ -29,7 +31,8 @@ class Bloc {
     _characters = _database.reference().child("characters");
     _movies = _database.reference().child("movies");
     _tvs = _database.reference().child("tv");
-    _char_details = _database.reference().child("char_details");
+    _charDetails = _database.reference().child("char_details");
+    _news = _database.reference().child("news");
     _wallpapers = _database.reference().child("wallpapers");
     init();
   }
@@ -57,7 +60,11 @@ class Bloc {
   }
 
   DatabaseReference getCharacterDetail() {
-    return _char_details;
+    return _charDetails;
+  }
+
+  DatabaseReference getNews() {
+    return _news;
   }
 
   DatabaseReference getWallpapers() {
@@ -77,6 +84,10 @@ class Bloc {
       idToken: googleAuth.idToken,
     )))
         .user;
+  }
+
+  Future<void> logout() async {
+    return _auth.signOut();
   }
 
   Future<int> putWatchOrder() async {
@@ -351,15 +362,25 @@ class Bloc {
   Future<int> putCharacterDetails(Character item) async {
     List<dom.Element> powerGrid = <dom.Element>[];
     List<dom.Element> shortBio = <dom.Element>[];
-    Response response = await Client().get("https://marvel.com" +
-        item.link +
-        (item.context != "comic" ? "/in-comics" : ""));
+    List<dom.Element> someMoreBio = <dom.Element>[];
+    Response response = await Client().get("https://marvel.com" + item.link);
     response.headers['content-type'] = "text/html; charset=UTF-8";
     var document = parse(response.body, encoding: 'gzip');
+    dom.Element rightPage = document.querySelector(
+        "body .masthead__tabs a.masthead__tabs__link[data-click-text='in comics full report']");
+    if (rightPage != null) {
+      Response response = await Client()
+          .get("https://marvel.com" + rightPage.attributes['href']);
+      response.headers['content-type'] = "text/html; charset=UTF-8";
+      document = parse(response.body, encoding: 'gzip');
+    }
+
     powerGrid.addAll(
         document.querySelectorAll("body .power-grid .power-circle__wrapper"));
     shortBio.addAll(
         document.querySelectorAll("body .railExploreBio .bioheader__stats"));
+    someMoreBio.addAll(
+        document.querySelectorAll("body .railBioInfo .railBioInfo__Item"));
 
     Map<String, String> charDetails = Map<String, String>();
 
@@ -376,14 +397,56 @@ class Bloc {
     for (dom.Element dItem in shortBio) {
       String label = dItem.querySelector(".bioheader__label").text;
       String stat = dItem.querySelector(".bioheader__stat").text;
-      // print(currentPowerRating);
       charDetails.addAll({label: stat});
     }
+    for (dom.Element dItem in someMoreBio) {
+      String stat = "";
+      String label =
+          dItem.querySelector(".railBioInfoItem__label").text.toLowerCase();
+      if (label == "powers") {
+        List<dom.Element> powers = dItem.querySelectorAll(".railBioLinks>li");
+        for (dom.Element powerItem in powers) {
+          stat += powerItem.text + "\n";
+        }
+      } else {
+        stat = dItem.querySelector(".railBioLinks").text;
+      }
+      charDetails.addAll({label: stat});
+    }
+    if (charDetails.length == 0)
+      charDetails.addAll({"universe": "Marvel Universe"});
     CharacterDetail charD = CharacterDetail.fromMap(charDetails);
-    _char_details
+    _charDetails
         .child(item.link.substring(item.link.lastIndexOf("/")))
         .set(charD.toJson())
         .catchError(print);
     return 0;
+  }
+
+  Future<int> putNews() async {
+    List<String> source = <String>[
+      'https://www.marvel.com/v1/pagination/feed_cards?limit=100',
+    ];
+
+    int count = 0;
+    for (String url in source) {
+      Response response = await Client().get(url);
+      List<dynamic> list = json.decode(response.body)['data']['results'];
+      for (dynamic item in list) {
+        try {
+          NewsItem newsItem = NewsItem.fromMap(item);
+          _news
+              .child(newsItem.timestamp.millisecondsSinceEpoch.toString())
+              .set(newsItem.toJson())
+              .catchError(print);
+          count++;
+        } catch (error) {
+          print(error);
+        }
+      }
+    }
+    print(count);
+    // provider.getDatabase().purgeOutstandingWrites();
+    return count;
   }
 }

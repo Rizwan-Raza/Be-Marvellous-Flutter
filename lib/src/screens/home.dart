@@ -71,12 +71,53 @@ class _HomeState extends State<Home> {
           ],
           trailing: CircleAvatar(
             child: login
-                ? Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      image: DecorationImage(
-                          fit: BoxFit.cover,
-                          image: CachedNetworkImageProvider(user.photoUrl)),
+                ? InkWell(
+                    borderRadius: BorderRadius.circular(50.0),
+                    onTap: () {
+                      showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                                title: Text(user.displayName),
+                                content: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Text(user.email),
+                                    Divider(
+                                      height: 40.0,
+                                    ),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      // height: double.infinity,
+                                      child: RaisedButton(
+                                        color: Colors.red,
+                                        child: Text(
+                                          "Logout",
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                        onPressed: () {
+                                          print("We have to do something here");
+                                          bloc.logout().then((value) {
+                                            setState(() {
+                                              this.login = false;
+                                              this.user = null;
+                                            });
+                                          });
+                                          Navigator.pop(context);
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ));
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        image: DecorationImage(
+                            fit: BoxFit.cover,
+                            image: CachedNetworkImageProvider(user.photoUrl)),
+                      ),
                     ),
                   )
                 : loginWidget,

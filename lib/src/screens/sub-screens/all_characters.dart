@@ -83,8 +83,10 @@ class _AllCharactersState extends State<AllCharacters>
                 maxLines: 2,
                 style: TextStyle(color: Colors.white, fontSize: 16.0),
               ),
-              Text("${char.subtitle}",
-                  maxLines: 2, style: TextStyle(color: Colors.white70)),
+              char.subtitle != null
+                  ? Text(char.subtitle,
+                      maxLines: 2, style: TextStyle(color: Colors.white70))
+                  : Container(),
             ],
           ),
         ),
