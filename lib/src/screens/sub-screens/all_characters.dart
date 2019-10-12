@@ -25,7 +25,24 @@ class _AllCharactersState extends State<AllCharacters>
       stream: widget.ref.onValue,
       builder: (context, snapshot) {
         if (snapshot.hasData) {
+          if (snapshot.data.snapshot.value == null) {
+            switch (widget.type) {
+              case 2:
+                widget.bloc.putHeroes();
+                break;
+              case 3:
+                widget.bloc.putVillain();
+                break;
+              case 1:
+              default:
+                widget.bloc.putCharacters();
+            }
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
           List<dynamic> map = snapshot.data.snapshot.value.values.toList();
+          // print(snapshot.data.snapshot.value);
           // print(map);
           map.sort((a, b) => a['link'].compareTo(b['link']));
           return RefreshIndicator(

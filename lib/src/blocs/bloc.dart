@@ -314,7 +314,7 @@ class Bloc {
       for (dynamic item in list) {
         try {
           String key = item['link']['link'];
-          key = key.substring(key.lastIndexOf("/"));
+          key = key.split("/").elementAt(2);
           _tvs.child(key).set(Movie.fromMap(item).toJson()).catchError(print);
           id++;
         } catch (error) {
@@ -401,8 +401,12 @@ class Bloc {
     }
     for (dom.Element dItem in someMoreBio) {
       String stat = "";
-      String label =
-          dItem.querySelector(".railBioInfoItem__label").text.toLowerCase();
+      String label = dItem
+          .querySelector(".railBioInfoItem__label")
+          .text
+          .trim()
+          .toLowerCase()
+          .replaceAll(" ", "_");
       if (label == "powers") {
         List<dom.Element> powers = dItem.querySelectorAll(".railBioLinks>li");
         for (dom.Element powerItem in powers) {

@@ -17,6 +17,7 @@ class _CharacterDetailState extends State<CharacterDetail> {
   bool refreshing = false;
   @override
   Widget build(BuildContext context) {
+    widget.bloc.putCharacterDetails(widget.item);
     print("Detail Screen");
     return Scaffold(
       body: NestedScrollView(
@@ -124,7 +125,6 @@ class _CharacterDetailState extends State<CharacterDetail> {
                       if (snapshot.hasData) {
                         if (snapshot.data.snapshot.value == null) {
                           // print("One from here 125");
-                          widget.bloc.putCharacterDetails(widget.item);
                           return Center(
                               child: Column(
                             mainAxisSize: MainAxisSize.min,

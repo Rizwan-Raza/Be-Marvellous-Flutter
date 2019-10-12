@@ -23,7 +23,11 @@ class _MoviesState extends State<Movies>
         stream: widget.ref.onValue,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            List<dynamic> map = snapshot.data.snapshot.value;
+            List<dynamic> map = snapshot.data.snapshot.value.values.toList();
+            map.sort((a, b) =>
+                "${a['date']['year']}${a['date']['month'].padLeft(2, "0")}${a['date']['day'].padLeft(2, "0")}"
+                    .compareTo(
+                        "${b['date']['year']}${b['date']['month'].padLeft(2, "0")}${b['date']['day'].padLeft(2, "0")}"));
             return RefreshIndicator(
               onRefresh: () async {
                 switch (widget.type) {
@@ -38,7 +42,6 @@ class _MoviesState extends State<Movies>
                 physics: AlwaysScrollableScrollPhysics(),
                 padding: EdgeInsets.zero,
                 itemCount: map.length,
-                reverse: false,
                 itemBuilder: (context, int index) {
                   return getMovieTile(context, Movie.fromMap(map[index]));
                 },

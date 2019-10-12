@@ -1,17 +1,18 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
-class MaQuizGame extends StatefulWidget {
-  MaQuizGame({Key key}) : super(key: key);
+class WhosWhoGame extends StatefulWidget {
+  WhosWhoGame({Key key}) : super(key: key);
 
-  _MaQuizGameState createState() => _MaQuizGameState();
+  _WhosWhoGameState createState() => _WhosWhoGameState();
 }
 
-class _MaQuizGameState extends State<MaQuizGame> {
+class _WhosWhoGameState extends State<WhosWhoGame> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("MaQuiz: Marvel Quiz"),
+        title: Text("Who's Who: Guess Game"),
       ),
       body: Container(
         color: Colors.grey[100],
@@ -21,12 +22,9 @@ class _MaQuizGameState extends State<MaQuizGame> {
             Container(
               // color: Colors.red[200],
               height: MediaQuery.of(context).size.height / 2 - 58,
-              child: Center(
-                child: Text(
-                  "Question goes here, Which can be two to three lines, don't know?",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 24.0),
-                ),
+              child: CachedNetworkImage(
+                imageUrl:
+                    "https://terrigen-cdn-dev.marvel.com/content/prod/1x/default/explore-no-img.jpg",
               ),
             ),
             Container(

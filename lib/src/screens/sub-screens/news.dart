@@ -21,6 +21,7 @@ class _NewsScreenState extends State<NewsScreen> {
   Widget build(BuildContext context) {
     this.bloc = widget.bloc;
     this.ref = bloc.getNews();
+    bloc.putNews();
     print("Method Run, News List");
     return Column(
       children: <Widget>[

@@ -24,7 +24,7 @@ class _HomeState extends State<Home> {
   Widget loginWidget;
 
   List<Widget> pages = <Widget>[
-    OrderScreen(key: PageStorageKey('Page1'), bloc: bloc, type: 1),
+    OrderScreen(key: PageStorageKey('Page1'), bloc: bloc),
     GamesScreen(key: PageStorageKey('Page2'), bloc: bloc, type: 2),
     CharactersScreen(key: PageStorageKey('Page3'), bloc: bloc, type: 1),
     MediaScreen(key: PageStorageKey('Page4'), bloc: bloc, type: 1),
