@@ -1,4 +1,5 @@
 import 'package:be_marvellous/src/screens/sub-screens/games.dart';
+import 'package:be_marvellous/src/utilities/theme.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -16,13 +17,22 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  // Main Singleton BLoC Object
   static final Bloc bloc = Bloc();
 
+  // Selected Page Index
   int _selectedIndex = 0;
+
+  // Whether user logged in or not?
   bool login = false;
+
+  // User object, null if not logged in.
   FirebaseUser user;
+
+  // Login Widget to place at top
   Widget loginWidget;
 
+  // Bottom Pages
   List<Widget> pages = <Widget>[
     OrderScreen(key: PageStorageKey('Page1'), bloc: bloc),
     GamesScreen(key: PageStorageKey('Page2'), bloc: bloc, type: 2),
@@ -30,10 +40,15 @@ class _HomeState extends State<Home> {
     MediaScreen(key: PageStorageKey('Page4'), bloc: bloc, type: 1),
   ];
 
+  // Page Storage Bucket
   final PageStorageBucket bucket = PageStorageBucket();
 
   @override
   Widget build(BuildContext context) {
+    // Light Theme Setter
+    ThemeUtility.setLightTheme();
+
+    // User Login Check
     loginWidget = getLoginWidget();
     bloc.getUser().then((iUser) {
       setState(() {
@@ -43,15 +58,9 @@ class _HomeState extends State<Home> {
     });
 
     return Scaffold(
-      bottomNavigationBar: FancyBottomNavigation(
-        tabs: [
-          TabData(iconData: Icons.toc, title: "Watch List"),
-          TabData(iconData: Icons.videogame_asset, title: "Games"),
-          TabData(iconData: Icons.face, title: "Characters"),
-          TabData(iconData: Icons.local_movies, title: "Media"),
-        ],
-        onTabChangedListener: onTabTapped,
-      ),
+      // drawer: _buildSideDrawer(),
+
+      bottomNavigationBar: _buildBottomNavigation(),
       body: Container(
         padding: EdgeInsets.only(top: 4.0),
         child: FloatingSearchBar(
@@ -69,123 +78,8 @@ class _HomeState extends State<Home> {
               ),
             )
           ],
-          trailing: CircleAvatar(
-            child: login
-                ? InkWell(
-                    borderRadius: BorderRadius.circular(50.0),
-                    onTap: () {
-                      showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                                title: Text(user.displayName),
-                                content: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    Text(user.email),
-                                    Divider(
-                                      height: 40.0,
-                                    ),
-                                    SizedBox(
-                                      width: double.infinity,
-                                      // height: double.infinity,
-                                      child: RaisedButton(
-                                        color: Colors.red,
-                                        child: Text(
-                                          "Logout",
-                                          style: TextStyle(color: Colors.white),
-                                        ),
-                                        onPressed: () {
-                                          print("We have to do something here");
-                                          bloc.logout().then((value) {
-                                            setState(() {
-                                              this.login = false;
-                                              this.user = null;
-                                            });
-                                          });
-                                          Navigator.pop(context);
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ));
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        image: DecorationImage(
-                            fit: BoxFit.cover,
-                            image: CachedNetworkImageProvider(user.photoUrl)),
-                      ),
-                    ),
-                  )
-                : loginWidget,
-          ),
-          drawer: Drawer(
-            child: Drawer(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: <Widget>[
-                  DrawerHeader(
-                    child: Container(
-                      alignment: Alignment.center,
-                      child: Text(
-                        'BE MARVELLOUS',
-                        style: TextStyle(
-                            fontFamily: 'Marvel',
-                            fontSize: 60.0,
-                            color: Colors.white),
-                      ),
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                    ),
-                  ),
-                  ListTile(
-                    title: Text('Watch List'),
-                    leading: Icon(Icons.toc),
-                    onTap: () {
-                      onTabTapped(0);
-                      Navigator.pop(context);
-                    },
-                  ),
-                  ListTile(
-                    title: Text('Characters'),
-                    leading: Icon(Icons.face),
-                    onTap: () {
-                      onTabTapped(1);
-                      Navigator.pop(context);
-                    },
-                  ),
-                  ListTile(
-                    title: Text('Movies'),
-                    leading: Icon(Icons.movie),
-                    onTap: () {
-                      onTabTapped(2);
-                      Navigator.pop(context);
-                    },
-                  ),
-                  ListTile(
-                    title: Text('TV Shows'),
-                    leading: Icon(Icons.tv),
-                    onTap: () {
-                      onTabTapped(3);
-                      Navigator.pop(context);
-                    },
-                  ),
-                  Divider(),
-                  ListTile(
-                    title: Text('Settings'),
-                    leading: Icon(Icons.settings),
-                    onTap: () {
-                      // onTabTapped(1);
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
+          trailing: _buildProfile(),
+          drawer: _buildSideDrawer(),
           onChanged: (String value) {},
           onTap: () {},
           decoration: InputDecoration.collapsed(
@@ -196,22 +90,25 @@ class _HomeState extends State<Home> {
     );
   }
 
+  // Bottom Tab Tap
   onTabTapped(int index) {
     setState(() {
       this._selectedIndex = index;
     });
   }
 
+  // Login Widget
   Widget getLoginWidget() {
     return IconButton(
-        icon: Icon(Icons.person),
-        onPressed: () async {
-          user = await bloc.login();
-          setState(() {
-            user = user;
-            login = true;
-          });
+      icon: Icon(Icons.person),
+      onPressed: () async {
+        user = await bloc.login();
+        setState(() {
+          user = user;
+          login = true;
         });
+      },
+    );
   }
 
   // Widget _getDefaultAppBar() {
@@ -223,4 +120,137 @@ class _HomeState extends State<Home> {
   //     ),
   //   );
   // }
+
+  Widget _buildBottomNavigation() {
+    return FancyBottomNavigation(
+      tabs: [
+        TabData(iconData: Icons.toc, title: "Watch List"),
+        TabData(iconData: Icons.videogame_asset, title: "Games"),
+        TabData(iconData: Icons.face, title: "Characters"),
+        TabData(iconData: Icons.local_movies, title: "Media"),
+      ],
+      onTabChangedListener: onTabTapped,
+    );
+  }
+
+  Widget _buildProfile() {
+    return CircleAvatar(
+      child: login
+          ? InkWell(
+              borderRadius: BorderRadius.circular(50.0),
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text(user.displayName),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(user.email),
+                        Divider(
+                          height: 40.0,
+                        ),
+                        SizedBox(
+                          width: double.infinity,
+                          // height: double.infinity,
+                          child: RaisedButton(
+                            color: Colors.red,
+                            child: Text(
+                              "Logout",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            onPressed: () {
+                              print("We have to do something here");
+                              bloc.logout().then((value) {
+                                setState(() {
+                                  this.login = false;
+                                  this.user = null;
+                                });
+                              });
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: DecorationImage(
+                    fit: BoxFit.cover,
+                    image: CachedNetworkImageProvider(user.photoUrl),
+                  ),
+                ),
+              ),
+            )
+          : loginWidget,
+    );
+  }
+
+  Widget _buildSideDrawer() {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: <Widget>[
+          DrawerHeader(
+            child: Container(
+              alignment: Alignment.center,
+              child: Text(
+                'BE MARVELLOUS',
+                style: TextStyle(
+                    fontFamily: 'Marvel', fontSize: 60.0, color: Colors.white),
+              ),
+            ),
+            decoration: BoxDecoration(
+              color: Colors.red,
+            ),
+          ),
+          ListTile(
+            title: Text('Watch List'),
+            leading: Icon(Icons.toc),
+            onTap: () {
+              onTabTapped(0);
+              Navigator.pop(context);
+            },
+          ),
+          ListTile(
+            title: Text('Characters'),
+            leading: Icon(Icons.face),
+            onTap: () {
+              onTabTapped(1);
+              Navigator.pop(context);
+            },
+          ),
+          ListTile(
+            title: Text('Movies'),
+            leading: Icon(Icons.movie),
+            onTap: () {
+              onTabTapped(2);
+              Navigator.pop(context);
+            },
+          ),
+          ListTile(
+            title: Text('TV Shows'),
+            leading: Icon(Icons.tv),
+            onTap: () {
+              onTabTapped(3);
+              Navigator.pop(context);
+            },
+          ),
+          Divider(),
+          ListTile(
+            title: Text('Settings'),
+            leading: Icon(Icons.settings),
+            onTap: () {
+              // onTabTapped(1);
+            },
+          ),
+        ],
+      ),
+    );
+  }
 }

@@ -440,7 +440,9 @@ class Bloc {
         try {
           NewsItem newsItem = NewsItem.fromMap(item);
           _news
-              .child(newsItem.timestamp.millisecondsSinceEpoch.toString())
+              .child(newsItem.timestamp.millisecondsSinceEpoch.toString() +
+                  "_" +
+                  newsItem.nid.toString())
               .set(newsItem.toJson())
               .catchError(print);
           count++;
