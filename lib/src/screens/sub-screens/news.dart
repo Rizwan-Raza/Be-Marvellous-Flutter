@@ -35,7 +35,7 @@ class _NewsScreenState extends State<NewsScreen> {
               padding: EdgeInsets.zero,
               query: ref ??
                   ((bloc == null) ? widget.bloc.getNews() : bloc.getNews()),
-              sort: (a, b) => int.parse(b.key).compareTo(int.parse(a.key)),
+              sort: (a, b) => b.key.compareTo(a.key),
               itemBuilder: (_, DataSnapshot snapshot,
                   Animation<double> animation, int x) {
                 NewsItem currentItem = NewsItem.fromMap(snapshot.value);

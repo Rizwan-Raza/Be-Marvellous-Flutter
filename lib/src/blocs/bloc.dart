@@ -429,7 +429,8 @@ class Bloc {
 
   Future<int> putNews() async {
     List<String> source = <String>[
-      'https://www.marvel.com/v1/pagination/feed_cards?limit=100',
+      'https://www.marvel.com/v1/pagination/feed_cards?limit=24',
+      'https://www.marvel.com/v1/pagination/feed_cards?limit=24&offset=24',
     ];
 
     int count = 0;
